@@ -30,6 +30,32 @@ class AlunoService{
         return aluno;
     }
 
+    async update(id, dados){
+        const {nome, email} = dados;
+
+        if(!nome && !email){
+            throw new AlunoInvalidoError("Informe nome e/ou email para atualizar");
+        }
+
+        try{
+            const alunoAtualizado = await prisma.aluno.update({
+                where: { id },
+                data: dados
+            });
+            return alunoAtualizado;
+        }catch(error){
+            
+            if(error.code === "P2025"){
+                throw new AlunoNaoEncontradoError();
+            }
+            
+            if(error.code === "P2002"){
+                throw new AlunoInvalidoError("Esse email já está sendo usado por outro aluno");
+            }
+            throw error;
+        }
+    }
+
     async create(aluno){
         const {nome, email} = aluno;
         if(!nome || !email){
